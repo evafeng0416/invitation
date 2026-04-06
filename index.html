@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>An Invitation — Eva</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: #160c08;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .canal {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+
+    .scene {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100vh;
+      padding: 3.5rem 2.5rem;
+      max-width: 560px;
+      margin: 0 auto;
+      overflow-y: auto;
+    }
+
+    .p1 {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .p2 {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .name-input {
+      background: transparent;
+      border: none;
+      border-bottom: 0.5px solid rgba(200,155,100,0.3);
+      outline: none;
+      font-family: 'Cormorant SC', serif;
+      font-size: 22px;
+      font-weight: 300;
+      color: #dfc9a4;
+      text-align: center;
+      width: 100%;
+      max-width: 300px;
+      padding: 10px 0;
+      letter-spacing: 0.12em;
+    }
+
+    .name-input::placeholder { color: rgba(200,155,100,0.25); }
+    .name-input:focus { border-bottom-color: rgba(200,155,100,0.6); }
+
+    .enter-hint {
+      font-family: 'Cormorant SC', serif;
+      font-size: 10px;
+      color: rgba(200,155,100,0.2);
+      letter-spacing: 0.22em;
+      margin-top: 16px;
+      text-transform: uppercase;
+    }
+
+    .dear-line {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 15px;
+      color: rgba(200,155,100,0.45);
+      letter-spacing: 0.04em;
+      margin-bottom: 1.8rem;
+    }
+
+    .invite-body {
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      line-height: 1.95;
+      color: #cdb899;
+      text-align: left;
+    }
+
+    .invite-body p { margin-bottom: 1.5rem; }
+
+    .sign-off {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-size: 16px;
+      color: rgba(200,155,100,0.45);
+      margin-top: 0.25rem;
+    }
+
+    .back {
+      background: none;
+      border: none;
+      color: rgba(200,155,100,0.18);
+      font-family: 'Cormorant SC', serif;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      cursor: pointer;
+      margin-top: 2.5rem;
+      text-transform: uppercase;
+    }
+
+    .back:hover { color: rgba(200,155,100,0.5); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeIn 2s ease forwards; }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 0.82; }
+      50%       { opacity: 1; }
+    }
+    .breathe { animation: breathe 7s ease-in-out infinite; }
+  </style>
+</head>
+<body>
+  <div class="canal">
+    <canvas id="bg"></canvas>
+    <div class="scene">
+
+      <div class="p1 breathe" id="p1">
+        <input class="name-input" id="name-input" type="text" placeholder="your name" maxlength="80" autocomplete="off" spellcheck="false" />
+        <p class="enter-hint">press enter</p>
+      </div>
+
+      <div class="p2" id="p2">
+        <p class="dear-line" id="dear-line"></p>
+        <div class="invite-body">
+          <p>I hereby sincerely invite you to my birthday performance, where we contemplate about life and death, about the passage of time, about what it means to be born.</p>
+          <p>This offering will take place on my 26th birthday April 16, 2026 at room F202, 4–6pm, CalArts, Los Angeles, California, United States, North America, 6587 miles / 10600km away from my birth place Hangzhou, China.</p>
+          <p>Before you come, I want you to have a conversation with one person about life and death, about the passage of time, about what it means to be born. And if they are available, invite them to this event as well.</p>
+        </div>
+        <p class="sign-off">Sincerely, Eva</p>
+        <button class="back" id="back-btn">&#8592; return</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('bg');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function drawCanal(t) {
+      const W = canvas.width, H = canvas.height, cx = W / 2;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#160c08';
+      ctx.fillRect(0, 0, W, H);
+
+      const layers = 10;
+      for (let i = layers; i >= 0; i--) {
+        const prog = i / layers;
+        const b1 = Math.sin(t * 0.00018 + i * 0.35) * 16;
+        const b2 = Math.cos(t * 0.00014 + i * 0.28) * 10;
+        const openTop = 16 + prog * (W * 0.54) + b1;
+        const openBot = 16 + prog * (W * 0.50) + b2;
+        const alpha = 0.05 + (1 - prog) * 0.065;
+        const r = Math.round(58 + prog * 85);
+        const g = Math.round(24 + prog * 32);
+        const b = Math.round(12 + prog * 18);
+        ctx.beginPath();
+        ctx.moveTo(cx - openTop, 0);
+        ctx.bezierCurveTo(cx - openTop * 0.35, H * 0.32, cx - openBot * 0.35, H * 0.62, cx - openBot, H);
+        ctx.lineTo(cx + openBot, H);
+        ctx.bezierCurveTo(cx + openBot * 0.35, H * 0.62, cx + openTop * 0.35, H * 0.32, cx + openTop, 0);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+        ctx.fill();
+      }
+
+      const glow = Math.sin(t * 0.00016) * 0.04 + 0.09;
+      const grad = ctx.createRadialGradient(cx, H * 0.44, 0, cx, H * 0.44, 90);
+      grad.addColorStop(0, `rgba(190,115,55,${glow})`);
+      grad.addColorStop(1, 'rgba(190,115,55,0)');
+      ctx.beginPath();
+      ctx.ellipse(cx, H * 0.44, 90, 55, 0, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+    requestAnimationFrame(function loop(t) { drawCanal(t); requestAnimationFrame(loop); });
+
+    /* ── Audio ── */
+    const AC = window.AudioContext || window.webkitAudioContext;
+    let audioStarted = false;
+
+    function startAudio() {
+      if (audioStarted || !AC) return;
+      audioStarted = true;
+      const ac = new AC();
+
+      function heartbeat() {
+        const now = ac.currentTime;
+        function thump(when, gain) {
+          const osc = ac.createOscillator();
+          const env = ac.createGain();
+          osc.connect(env); env.connect(ac.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(48, when);
+          osc.frequency.exponentialRampToValueAtTime(30, when + 0.18);
+          env.gain.setValueAtTime(0, when);
+          env.gain.linearRampToValueAtTime(gain, when + 0.01);
+          env.gain.exponentialRampToValueAtTime(0.0001, when + 0.22);
+          osc.start(when); osc.stop(when + 0.25);
+        }
+        thump(now, 0.28);
+        thump(now + 0.22, 0.16);
+        setTimeout(heartbeat, 1050);
+      }
+
+      function breath() {
+        const dur = 7;
+        function cycle() {
+          const now = ac.currentTime;
+          const buf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.012;
+          const src = ac.createBufferSource();
+          src.buffer = buf;
+          const filt = ac.createBiquadFilter();
+          filt.type = 'bandpass'; filt.frequency.value = 320; filt.Q.value = 0.6;
+          const env = ac.createGain();
+          src.connect(filt); filt.connect(env); env.connect(ac.destination);
+          env.gain.setValueAtTime(0, now);
+          env.gain.linearRampToValueAtTime(0.18, now + dur * 0.42);
+          env.gain.linearRampToValueAtTime(0, now + dur * 0.88);
+          src.start(now); src.stop(now + dur);
+          setTimeout(cycle, dur * 850);
+        }
+        cycle();
+      }
+
+      heartbeat();
+      breath();
+    }
+
+    document.addEventListener('click', startAudio, { once: true });
+    document.addEventListener('keydown', startAudio, { once: true });
+
+    /* ── Navigation ── */
+    const input = document.getElementById('name-input');
+    const p1 = document.getElementById('p1');
+    const p2 = document.getElementById('p2');
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const name = input.value.trim();
+        if (!name) return;
+        document.getElementById('dear-line').textContent = 'Dear ' + name + ',';
+        p1.style.display = 'none';
+        p2.style.display = 'flex';
+        p2.classList.add('fade-in');
+      }
+    });
+
+    document.getElementById('back-btn').addEventListener('click', () => {
+      p2.style.display = 'none';
+      p2.classList.remove('fade-in');
+      p1.style.display = 'flex';
+      input.focus();
+    });
+
+    input.focus();
+  </script>
+</body>
+</html>
